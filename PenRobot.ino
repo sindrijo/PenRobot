@@ -45,9 +45,9 @@ int m2_p4 = 4;
 CustomStepper motor1 = CustomStepper(stepsPerRev, m1_p1, m1_p2, m1_p3, m1_p4);
 CustomStepper motor2 = CustomStepper(stepsPerRev, m2_p1, m2_p2, m2_p3, m2_p4);
 
-int actionDurations[6] = { 1000, 3000, 1000, 2000, 5000, 1000 };
-int actionIDs[6] = { 1, 2, 1, 3, 1, 0 };
-int maxActionIndex = 5;
+int actionDurations[8] = { 6350, 5000, 6350, 5000, 6350, 5000, 6350, 5000 };
+int actionIDs[8] = { 4, 5, 4, 5, 4, 5, 4, 5 };
+int maxActionIndex = 7;
 
 void setup()
 {
@@ -55,7 +55,7 @@ void setup()
   Serial.begin(9600);
   
   currentActionIndex = 0;  
-  currentSpeed = 0.5;
+  currentSpeed = 1.0;
   
   // Set first action and its duration
   setAction( actionIDs[currentActionIndex], currentSpeed );
@@ -72,19 +72,24 @@ void setAction(int actionId, double speedIntensity)
       drive(speedIntensity);
       break;
     case 2:
+      Serial.println("Turning left");
       turnLeft(speedIntensity);
       break;
     case 3:
+      Serial.println("Turning right");
       turnRight(speedIntensity);
       break;
     case 4:
+      Serial.println("Rotating");
       rotate(speedIntensity);
       break;
     case 5:
+      Serial.println("STOP (Not moving)");
       drive(0);
       break;
     default:
-      drive(1.0);
+      Serial.println("Default action");
+      drive(0);
       break;
   }
 }
@@ -115,8 +120,11 @@ void loop()
       
       if( currentActionIndex > maxActionIndex )
       {
+        
+        
         isDone = true;
         drive(0.0);
+        
       }
       else
       {
@@ -124,12 +132,11 @@ void loop()
         setAction( actionIDs[currentActionIndex], currentSpeed );
       }
   }
-
-
   
-  
-  
-  stepDaMotors();
+  if (!isDone)
+  {
+    stepDaMotors();
+  }
 };
 
 void resetElapsedTime()
@@ -141,7 +148,6 @@ void resetElapsedTime()
 
 void stepDaMotors()
 {
-  Serial.println("Stepping motor.");
   motor1.step("");
   motor2.step("");
   delay(1);
