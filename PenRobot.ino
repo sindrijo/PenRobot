@@ -48,10 +48,29 @@ CustomStepper motor2 = CustomStepper(stepsPerRev, m2_p1, m2_p2, m2_p3, m2_p4);
 
 
 Servo servo;
+enum act {
+  drive = 1,
+  back = 8,
+  left = 2,
+  right = 3,
+  rotate = 4,
+  stop = 5,
+  startWrite = 6,
+  stopWrite = 7,
+};
 
 //int actionDurations[8] = { 6350, 5000, 6350, 5000, 6350, 5000, 6350, 5000 };
-int actionDurations[8] = { 1000, 500, 1000, 1000, 2000, 2000, 2000, 2000 };
-int actionIDs[8] =       { 6,   1,   7,   2,   6,   1,   6,   6 };
+int actionDurations[8] = { 1000, 500, 1000, 1000, 2000, 2000, 2000 };
+int actionIDs[8] = { 
+  act.startWrite,
+  act.drive,
+  act.stopWrite,
+  act.left,
+  act.startWrite,
+  act.drive,
+  act.stopWrite
+};
+
 int maxActionIndex = 7;
 
 void setup()
@@ -74,7 +93,7 @@ void setAction(int actionId, double speedIntensity)
 {
   switch( actionId )
   {
-    case 1:
+    case act.drive:
       Serial.println("Driving");
       drive(speedIntensity);
       break;
