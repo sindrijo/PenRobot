@@ -49,29 +49,47 @@ CustomStepper motor2 = CustomStepper(stepsPerRev, m2_p1, m2_p2, m2_p3, m2_p4);
 
 Servo servo;
 enum act {
-  drive = 1,
-  back = 8,
-  left = 2,
-  right = 3,
-  rotate = 4,
-  stop = 5,
-  startWrite = 6,
-  stopWrite = 7,
+  E_drive,
+  E_reverse,
+  E_turnLeft,
+  E_turnRight,
+  E_rotateLeft,
+  E_rotateRight,
+  E_stop,
+  E_startWrite,
+  E_stopWrite,
 };
 
 //int actionDurations[8] = { 6350, 5000, 6350, 5000, 6350, 5000, 6350, 5000 };
-int actionDurations[8] = { 1000, 500, 1000, 1000, 2000, 2000, 2000 };
-int actionIDs[8] = { 
-  act.startWrite,
-  act.drive,
-  act.stopWrite,
-  act.left,
-  act.startWrite,
-  act.drive,
-  act.stopWrite
+
+int actionIDs[] = { 
+  E_stopWrite,   
+  E_startWrite, 
+  E_drive,       
+  E_stopWrite, 
+  E_drive,   
+  E_rotateLeft,  
+  E_reverse,
+  E_startWrite,
+  E_reverse,
+  E_stopWrite
 };
 
-int maxActionIndex = 7;
+int actionDurations[] = { 
+    200, // stopw
+    200, // startw
+    2000, // drive
+    200, // stopw
+    600, // drive
+    1600, // rotateleft
+    300,  // reverse
+    200,  // startw
+    2000, // reverse
+    200  // stopwrite
+};
+
+// NOTE REMEMBER TO SET THIS PROPERLY, alternatively
+int maxActionIndex = 10;
 
 void setup()
 {
@@ -93,39 +111,44 @@ void setAction(int actionId, double speedIntensity)
 {
   switch( actionId )
   {
-    case act.drive:
+    case E_drive:
       Serial.println("Driving");
       drive(speedIntensity);
       break;
-    case 2:
+    case E_turnLeft:
       Serial.println("Turning left");
       turnLeft(speedIntensity);
       break;
-    case 3:
+    case E_turnRight:
       Serial.println("Turning right");
       turnRight(speedIntensity);
       break;
-    case 4:
-      Serial.println("Rotating");
-      rotate(speedIntensity);
+    case E_rotateLeft:
+      Serial.println("Rotating left.");
+      rotateLeft(speedIntensity);
       break;
-    case 5:
+    case E_rotateRight:
+      Serial.println("Rotating right.");
+      rotateRight(speedIntensity);
+      break;
+    case E_stop:
       Serial.println("STOP (Not moving)");
       drive(0);
       break;
-    case 6:
-      Serial.println("Pen UP (Servo)");
-      drive(0);
-      SetServo(180);
-      break;
-    case 7:
-      Serial.println("Pen DOWN (Servo)");
+    case E_startWrite:
+      Serial.println("StartWrite (Servo)");
       drive(0);
       SetServo(90);
       break;
-    case 8:
+    case E_stopWrite:
+      Serial.println("StopWrite (Servo)");
+      drive(0);
+      SetServo(180);
+      break;
+    case E_reverse:
       Serial.println("Reversing");
       drive(-speedIntensity);
+      break;
     default:
       Serial.println("Default action");
       drive(0);
@@ -212,9 +235,14 @@ void speed(int speed1, int speed2)
  motor1.setSpeed(speed1); 
  motor2.setSpeed(-speed2);
 }
-void rotate(double percent) 
+
+void rotateRight(double percent) 
 {
   speed(maxSpeed * percent, -(maxSpeed * percent));
+}
+void rotateLeft(double percent) 
+{
+  speed(-(maxSpeed * percent), maxSpeed * percent);
 }
 
 void turnRight(double percent)
