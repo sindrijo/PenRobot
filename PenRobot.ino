@@ -1,4 +1,5 @@
 #include "CustomStepper.h"
+#include <Servo.h>
 
 
 /*
@@ -45,14 +46,20 @@ int m2_p4 = 4;
 CustomStepper motor1 = CustomStepper(stepsPerRev, m1_p1, m1_p2, m1_p3, m1_p4);
 CustomStepper motor2 = CustomStepper(stepsPerRev, m2_p1, m2_p2, m2_p3, m2_p4);
 
-int actionDurations[8] = { 6350, 5000, 6350, 5000, 6350, 5000, 6350, 5000 };
-int actionIDs[8] = { 4, 5, 4, 5, 4, 5, 4, 5 };
+
+Servo servo;
+
+//int actionDurations[8] = { 6350, 5000, 6350, 5000, 6350, 5000, 6350, 5000 };
+int actionDurations[8] = { 1000, 500, 1000, 1000, 2000, 2000, 2000, 2000 };
+int actionIDs[8] =       { 6,   1,   7,   2,   6,   1,   6,   6 };
 int maxActionIndex = 7;
 
 void setup()
 {
   time = millis();
   Serial.begin(9600);
+  
+  servo.attach(A0);
   
   currentActionIndex = 0;  
   currentSpeed = 1.0;
@@ -87,6 +94,19 @@ void setAction(int actionId, double speedIntensity)
       Serial.println("STOP (Not moving)");
       drive(0);
       break;
+    case 6:
+      Serial.println("Pen UP (Servo)");
+      drive(0);
+      SetServo(180);
+      break;
+    case 7:
+      Serial.println("Pen DOWN (Servo)");
+      drive(0);
+      SetServo(90);
+      break;
+    case 8:
+      Serial.println("Reversing");
+      drive(-speedIntensity);
     default:
       Serial.println("Default action");
       drive(0);
@@ -153,6 +173,16 @@ void stepDaMotors()
   delay(1);
 }
 
+// Servo methods
+
+void SetServo(int angle)
+{
+  angle = (angle < 0) ? 0 : angle;
+  angle = (angle > 180)? 180 : angle;
+  
+  servo.write(angle);
+}
+// Stepper Methods
 void speed(int speed1, int speed2)
 {
  if (speed1 > 1023) speed1 = 1023;
