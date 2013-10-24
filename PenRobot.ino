@@ -62,6 +62,26 @@ enum act {
 
 //int actionDurations[8] = { 6350, 5000, 6350, 5000, 6350, 5000, 6350, 5000 };
 
+typedef struct Action
+{
+ act action;
+ int duration; 
+} Action;
+
+Action actions[] =
+{
+  { E_stopWrite, 300 },
+  { E_startWrite, 300 },
+  { E_drive, 2000 },
+  { E_stopWrite, 200 },
+  { E_drive, 600 },
+  { E_rotateLeft, 1500 },
+  { E_reverse, 300},
+  { E_startWrite, 300 },
+  { E_reverse, 2000 },
+  { E_stopWrite, 300}  
+};
+
 int actionIDs[] = { 
   E_stopWrite,   
   E_startWrite, 
@@ -81,7 +101,7 @@ int actionDurations[] = {
     2000, // drive
     200, // stopw
     600, // drive
-    1600, // rotateleft
+    1500, // rotateleft
     300,  // reverse
     200,  // startw
     2000, // reverse
@@ -190,8 +210,11 @@ void loop()
       }
       else
       {
-        newActionTime += actionDurations[currentActionIndex];
-        setAction( actionIDs[currentActionIndex], currentSpeed );
+        newActionTime += actions[currentActionIndex].duration;
+        //newActionTime += actionDurations[currentActionIndex];
+        setAction( actions[currentActionIndex].action, currentSpeed );
+        //setAction( actionIDs[currentActionIndex], currentSpeed );
+        
       }
   }
   
