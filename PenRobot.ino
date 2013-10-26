@@ -1,5 +1,11 @@
-#include "CustomStepper.h"
+#include "CustomStepper.h" // Made by Jens
 #include <Servo.h>
+
+/*
+  Authors:
+    Sindri Jóelsson
+    Stefan André Brannfjell
+*/
 
 
 /*
@@ -26,9 +32,9 @@ int stepsPerRev = 528;
 int currentActionIndex = 0;
 double currentSpeed = 0;
 
-unsigned long time = 0;
 unsigned long elapsedTime = 0;
 unsigned long newActionTime = 0;
+boolean isDone = false;
 
 // Motor 1
 int m1_p1 = 11;
@@ -42,12 +48,11 @@ int m2_p2 = 6;
 int m2_p3 = 5;
 int m2_p4 = 4;
 
-
+// Initialize motors and servo
 CustomStepper motor1 = CustomStepper(stepsPerRev, m1_p1, m1_p2, m1_p3, m1_p4);
 CustomStepper motor2 = CustomStepper(stepsPerRev, m2_p1, m2_p2, m2_p3, m2_p4);
-
-
 Servo servo;
+
 enum act {
   E_drive,
   E_reverse,
@@ -82,46 +87,18 @@ Action actions[] =
   { E_stopWrite, 300}  
 };
 
-int actionIDs[] = { 
-  E_stopWrite,   
-  E_startWrite, 
-  E_drive,       
-  E_stopWrite, 
-  E_drive,   
-  E_rotateLeft,  
-  E_reverse,
-  E_startWrite,
-  E_reverse,
-  E_stopWrite
-};
-
-int actionDurations[] = { 
-    200, // stopw
-    200, // startw
-    2000, // drive
-    200, // stopw
-    600, // drive
-    1500, // rotateleft
-    300,  // reverse
-    200,  // startw
-    2000, // reverse
-    200  // stopwrite
-};
-
 // NOTE REMEMBER TO SET THIS PROPERLY, alternatively
 int maxActionIndex = 10;
 
 void setup()
 {
-  time = millis();
   Serial.begin(9600);
   
   servo.attach(A0);
   
-  currentActionIndex = 0;  
-  currentSpeed = 1.0;
-  
   // Set first action and its duration
+  currentSpeed = 1.0
+  currentActionIndex = 0;  
   setAction( actionIDs[currentActionIndex], currentSpeed );
   newActionTime += actionDurations[currentActionIndex];
   
@@ -175,25 +152,11 @@ void setAction(int actionId, double speedIntensity)
       break;
   }
 }
-boolean isDone = false;
 
 void loop()
 {
   elapsedTime = millis(); 
   
-  /*
-  Serial.print("Elapsed Time:");
-  Serial.println(elapsedTime);
-  
-  Serial.print("Current ActionDuration:");
-  int x = actionDurations[currentActionIndex];
-  Serial.println(x);
-  
-  Serial.print("NewActionTime:");
-  Serial.println(newActionTime);
-  */
-  
-
   if( elapsedTime > newActionTime && !isDone )
   {
       currentActionIndex++;
@@ -202,19 +165,16 @@ void loop()
       
       if( currentActionIndex > maxActionIndex )
       {
-        
-        
         isDone = true;
         drive(0.0);
-        
       }
       else
       {
         newActionTime += actions[currentActionIndex].duration;
-        //newActionTime += actionDurations[currentActionIndex];
-        setAction( actions[currentActionIndex].action, currentSpeed );
-        //setAction( actionIDs[currentActionIndex], currentSpeed );
-        
+        setAction(
+                    actions[currentActionIndex].action, 
+                    currentSpeed 
+                  );        
       }
   }
   
@@ -222,60 +182,54 @@ void loop()
   {
     stepDaMotors();
   }
+  
 };
 
-void resetElapsedTime()
+// Servo methods
+void SetServo(int angle)
 {
-  elapsedTime = millis();
+    if( angle < 0 ) angle = 0;
+    if( angle > 180 ) angle = 180;
+    servo.write(angle);
 }
 
-
+// Stepper Methods
 
 void stepDaMotors()
 {
-  motor1.step("");
-  motor2.step("");
-  delay(1);
+    motor1.step("");
+    motor2.step("");
+    delay(1);
 }
 
-// Servo methods
-
-void SetServo(int angle)
-{
-  angle = (angle < 0) ? 0 : angle;
-  angle = (angle > 180)? 180 : angle;
-  
-  servo.write(angle);
-}
-// Stepper Methods
 void speed(int speed1, int speed2)
 {
- if (speed1 > 1023) speed1 = 1023;
- if (speed1 < -1023) speed1 = -1023;
- if (speed2 > 1023) speed2 = 1023;
- if (speed2 < -1023) speed2 = -1023;
- 
- motor1.setSpeed(speed1); 
- motor2.setSpeed(-speed2);
+   if (speed1 > 1023) speed1 = 1023;
+   if (speed1 < -1023) speed1 = -1023;
+   if (speed2 > 1023) speed2 = 1023;
+   if (speed2 < -1023) speed2 = -1023;
+   
+   motor1.setSpeed(speed1); 
+   motor2.setSpeed(-speed2);
 }
 
 void rotateRight(double percent) 
 {
-  speed(maxSpeed * percent, -(maxSpeed * percent));
+    speed(maxSpeed * percent, -(maxSpeed * percent));
 }
 void rotateLeft(double percent) 
 {
-  speed(-(maxSpeed * percent), maxSpeed * percent);
+    speed(-(maxSpeed * percent), maxSpeed * percent);
 }
 
 void turnRight(double percent)
 {
-  speed(maxSpeed * percent, 0);
+    speed(maxSpeed * percent, 0);
 }
 
 void turnLeft(double percent)
 {
- speed(0, maxSpeed * percent); 
+    speed(0, maxSpeed * percent); 
 }
 
 void drive(double percent)
